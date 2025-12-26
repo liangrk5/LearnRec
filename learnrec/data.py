@@ -1,5 +1,5 @@
 import os
-import shutil
+import pathlib
 import tempfile
 from typing import Dict, List, Tuple
 
@@ -17,16 +17,13 @@ def _download_sample(data_dir: str) -> str:
     if os.path.exists(target_path):
         return target_path
 
-    # Place the temporary file inside the target directory so the final rename
-    # does not cross filesystems (e.g., /tmp -> mounted workspace), which avoids
-    # "Invalid cross-device link" errors.
-    with tempfile.NamedTemporaryFile(delete=False, dir=data_dir) as tmp:
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
         tmp_path = tmp.name
     try:
         import urllib.request
 
         urllib.request.urlretrieve(CRITEO_SAMPLE_URL, tmp_path)
-        shutil.move(tmp_path, target_path)
+        pathlib.Path(tmp_path).rename(target_path)
     finally:
         if os.path.exists(tmp_path):
             os.remove(tmp_path)
